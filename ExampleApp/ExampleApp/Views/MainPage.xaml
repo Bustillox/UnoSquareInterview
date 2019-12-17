@@ -4,17 +4,17 @@
              x:Class="ExampleApp.Views.MainPage"
              Title="{Binding Title}">
 
-    <StackLayout HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand" Spacing="8" Padding="12">
-        <Label Text="{Binding Version}" />
+    <StackLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Spacing="8" Padding="12">
+        <Label Text="{Binding Version}" HorizontalOptions="CenterAndExpand" />
 
-        <Entry Placeholder="Introduzca una Marca" Text="{Binding Brand}"/>
-        <Entry Placeholder="Introduzca un Modelo" Text="{Binding Model}"/>
-        <Entry Placeholder="Introduzca el año del vehículo" Text="{Binding Year}"/>
+        <Entry Placeholder="Introduzca una Marca" Text="{Binding VehicleBrand}"/>
+        <Entry Placeholder="Introduzca un Modelo" Text="{Binding VehicleModel}"/>
+        <Entry Placeholder="Introduzca el año del vehículo" Text="{Binding VehicleYear}"/>
 
         <Button Text="Añadir Vehiculo" Command="{Binding AddVehicleCommand}"/>
 
         <Label Text="Vehicles List"/>
-        <ListView ItemsSource="{Binding VehicleList}">
+        <ListView ItemsSource="{Binding VehicleList}" RowHeight="100">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>

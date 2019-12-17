@@ -8,6 +8,9 @@ using System.Linq;
 using System.Text;
 using Acr.UserDialogs;
 using Xamarin.Forms;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using ExampleApp.Interfaces;
 
 namespace ExampleApp.ViewModels
 {
@@ -15,29 +18,37 @@ namespace ExampleApp.ViewModels
     {
         #region Props
 
-        private string _brand;
-        public string Brand
+        public string _version;
+        public string Version
+        {
+            get { return _version; }
+            set { SetProperty(ref _version, value); }
+        }
+
+        public string _brand;
+        public string VehicleBrand
         {
             get { return _brand; }
             set { SetProperty(ref _brand, value); }
         }
 
-        private string _model;
-        public string Model
+
+        public string _model;
+        public string VehicleModel
         {
             get { return _model; }
             set { SetProperty(ref _model, value); }
         }
 
-        private string _year;
-        public string Year
+        public string _year;
+        public string VehicleYear
         {
             get { return _year; }
             set { SetProperty(ref _year, value); }
         }
 
-        private List<Vehicle> _vehicleList = new List<Vehicle>();
-        public List<Vehicle> VehicleList
+        ObservableCollection<Vehicle> _vehicleList = new ObservableCollection<Vehicle>();
+        public ObservableCollection<Vehicle> VehicleList
         {
             get => _vehicleList; 
             set => SetProperty(ref _vehicleList, value); 
@@ -51,16 +62,18 @@ namespace ExampleApp.ViewModels
         public MainPageViewModel(INavigationService navigationService) : base(navigationService)
         {
             Title = "My Vehicles";
-            AddVehicleCommand = new DelegateCommand(AddVehicle);
-
+            AddVehicleCommand = new DelegateCommand(async () => await AddVehicle());
             LoadVehicleList();
+
+            string v = DependencyService.Get<IAppVersion>().GetVersion();
+            Version = v;
         }
 
-        void AddVehicle()
+        async Task AddVehicle()
         {
-            if (string.IsNullOrEmpty(Brand) || string.IsNullOrEmpty(Model) || string.IsNullOrEmpty(Year))
+            if (string.IsNullOrEmpty(VehicleBrand) || string.IsNullOrEmpty(VehicleModel) || string.IsNullOrEmpty(VehicleYear))
             {
-                UserDialogs.Instance.AlertAsync("Please fill all the values before continuing");
+                await UserDialogs.Instance.AlertAsync("Please fill all the values before continuing");
                 return;
             }
             
@@ -68,27 +81,32 @@ namespace ExampleApp.ViewModels
             {
                 foreach (var item in VehicleList)
                 {
-                    if (item.Brand == Brand && item.Model == Model && item.Year == Year)
+                    if (item.Brand == VehicleBrand && item.Model == VehicleModel && item.Year == VehicleYear)
                     {
-                        UserDialogs.Instance.AlertAsync("This element is already on the list");
+                        await UserDialogs.Instance.AlertAsync("This element is already on the list");
                         return;
                     }
-                    else
-                        VehicleList.Add( new Vehicle { Brand = Brand, Model = Model, Year = Year });
                 }
+                VehicleList.Add( new Vehicle { Brand = VehicleBrand, Model = VehicleModel, Year = VehicleYear });
             }
             else
             {
-                VehicleList.Add(new Vehicle { Brand = Brand, Model = Model, Year = Year });
-                Application.Current.Properties["MyVehicles"] = VehicleList;
-                Application.Current.SavePropertiesAsync();
+                VehicleList.Add(new Vehicle { Brand = VehicleBrand, Model = VehicleModel, Year = VehicleYear });
+                Application.Current.Properties.Add("MyVehicles", VehicleList);
+                await Application.Current.SavePropertiesAsync();
             }
-            
         }
 
         void LoadVehicleList()
         {
-            //VehicleList = (List<Vehicle>)Application.Current?.Properties["MyVehicles"] ?? new List<Vehicle>();
+            if (Application.Current.Properties.ContainsKey("MyVehicles"))
+            {
+                VehicleList = (ObservableCollection<Vehicle>)Application.Current?.Properties["MyVehicles"] ?? new ObservableCollection<Vehicle>();
+            }
+            else
+            {
+                VehicleList = new ObservableCollection<Vehicle>();
+            }
         }
     }
 }
